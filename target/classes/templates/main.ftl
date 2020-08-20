@@ -23,10 +23,10 @@
     </form>
     <#list messages as message>
     <div>
-        <b>${message!.id}</b>
-        <span>${message!.text}</span>
-        <i>${message!.tag}</i>
-        <strong>${message!.authorName}</strong>
+        <b>${message.id}</b>
+        <span>${message.text}</span>
+        <i>${message.tag}</i>
+        <strong>${message.authorName}</strong>
     </div>
         <#else>
         No message
