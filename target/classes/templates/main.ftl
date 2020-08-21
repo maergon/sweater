@@ -5,6 +5,7 @@
 
     <div>
         <@l.logout />
+        <span><a href="/user">User list</a></span>
     </div>
 
     <div>
@@ -16,9 +17,8 @@
         </form>
     </div>
     <div>Список сообщений</div>
-    <form method="post" action="filter">
-        <input type="text" name="filter">
-        <input type="hidden" name="_csrf" value="${_csrf.token}">
+    <form method="get" action="/main">
+        <input type="text" name="filter" value="${filter!}">
         <button type="submit">Найти</button>
     </form>
     <#list messages as message>
