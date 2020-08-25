@@ -29,6 +29,7 @@
         <i>${message.tag}</i>
         <strong>${message.authorName}</strong>
         <div>
+<#--            Приведение к булевому типу-->
             <#if message.filename??>
                 <img src="/img/${message.filename}">
             </#if>

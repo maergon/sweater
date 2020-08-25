@@ -58,7 +58,7 @@ public class MainController {
     ) throws IOException {
         Message message = new Message(text, tag, user);
 
-        if (file != null) {
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 //если директории нет, создаем
@@ -68,7 +68,7 @@ public class MainController {
             String uuidFile = UUID.randomUUID().toString();
             String resultFileName = uuidFile + "." + file.getOriginalFilename();
 
-            file.transferTo(new File(resultFileName));
+            file.transferTo(new File(uploadPath + "/" + resultFileName));
 
             message.setFilename(resultFileName);
         }
