@@ -15,7 +15,7 @@
     </a>
     <div class="collapse" id="collapseAddMessage">
         <div class="form-group mt-3">
-            <form method="post" action="/main" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <input type="text" class="form-control" name="text" placeholder="Enter your message"/>
                 </div>
@@ -35,6 +35,7 @@
             </form>
         </div>
     </div>
+
     <div class="card-columns">
         <#list messages as message>
             <div class="card my-3">
