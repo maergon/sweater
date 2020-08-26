@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRepo extends JpaRepository<User, Long> {
     //создаем свой метод по ключевым словам findBy...
     User findByUsername(String username);
+
+    User findByActivationCode(String code);
 }
