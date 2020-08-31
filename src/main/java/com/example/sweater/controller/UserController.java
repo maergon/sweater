@@ -65,4 +65,15 @@ public class UserController {
 
         return "redirect:/user";
     }
+
+    //TODO добавить удаление сообщений, настроить связь между таблицами user&message
+    @GetMapping("/delete/{user}")
+    public String userDelete(@PathVariable User user){
+        //очистили все роли пользователя
+        user.getRoles().clear();
+
+        userRepo.delete(user);
+
+        return "redirect:/user";
+    }
 }
