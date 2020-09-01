@@ -8,16 +8,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.example.sweater.controller.ControllerUtils.getErrors;
 
 @Controller
 public class MainController {
@@ -52,32 +55,43 @@ public class MainController {
     @PostMapping("/main")
     public String add(
             @AuthenticationPrincipal User user,
-            @RequestParam String text,
-            @RequestParam String tag, Map<String, Object> model,
+            @Valid Message message,
+            BindingResult bindingResult, //обязательно перед Model (связка)
+            Model model,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
-        Message message = new Message(text, tag, user);
+        message.setAuthor(user);
 
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                //если директории нет, создаем
-                uploadDir.mkdir();
+        if (bindingResult.hasErrors()) {
+            //получили список ошибок валидации на формах
+            Map<String, String> errorsMap = getErrors(bindingResult);
+            model.mergeAttributes(errorsMap);
+            model.addAttribute("message", message);
+        } else {
+            if (file != null && !file.getOriginalFilename().isEmpty()) {
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    //если директории нет, создаем
+                    uploadDir.mkdir();
+                }
+                //защита от коллизии, создаем уникальное название файла
+                String uuidFile = UUID.randomUUID().toString();
+                String resultFileName = uuidFile + "." + file.getOriginalFilename();
+
+                file.transferTo(new File(uploadPath + "/" + resultFileName));
+
+                message.setFilename(resultFileName);
             }
-            //защита от коллизии, создаем уникальное название файла
-            String uuidFile = UUID.randomUUID().toString();
-            String resultFileName = uuidFile + "." + file.getOriginalFilename();
 
-            file.transferTo(new File(uploadPath + "/" + resultFileName));
+            //после добавления сообщения, удаляем ошибки валидации
+            model.addAttribute("message", null);
 
-            message.setFilename(resultFileName);
+            messageRepo.save(message);
         }
-
-        messageRepo.save(message);
 
         Iterable<Message> messages = messageRepo.findAll();
 
-        model.put("messages", messages);
+        model.addAttribute("messages", messages);
 
         return "main";
     }

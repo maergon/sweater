@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -17,13 +18,20 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
     @Autowired
     private UserRepo userRepo;
-
     @Autowired
     private MailSender mailSender;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepo.findByUsername(username);
+        User user = userRepo.findByUsername(username);
+
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        return user;
     }
 
     public boolean addUser(User user) {
@@ -37,6 +45,7 @@ public class UserService implements UserDetailsService {
         user.setActive(true);
         user.setRoles(Collections.singleton(Role.USER));
         user.setActivationCode(UUID.randomUUID().toString()); //код активации по email, переход по ссылке
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepo.save(user);
 
@@ -97,13 +106,6 @@ public class UserService implements UserDetailsService {
         userRepo.save(user);
     }
 
-    public void deleteUser(User user) {
-        //очистили все роли пользователя
-        user.getRoles().clear();
-
-        userRepo.delete(user);
-    }
-
     public void updateProfile(User user, String password, String email) {
         String userEmail = user.getEmail();
 
@@ -123,7 +125,7 @@ public class UserService implements UserDetailsService {
 
         //меняем password у User
         if (!StringUtils.isEmpty(password)) {
-            user.setPassword(password);
+            user.setPassword(passwordEncoder.encode(password));
         }
 
         userRepo.save(user);
@@ -132,5 +134,12 @@ public class UserService implements UserDetailsService {
         if (isEmailChanged) {
             sendMessage(user);
         }
+    }
+
+    public void deleteUser(User user) {
+        //очистили все роли пользователя
+        user.getRoles().clear();
+
+        userRepo.delete(user);
     }
 }
